@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Countdown to Budafrés 2025</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --card:#111827;
+      --accent:#60a5fa;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: var(--bg);
+    }
+    /* HERO with background image */
+    .hero{
+      position:relative;
+      min-height: 48vh;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      isolation:isolate;
+    }
+    .hero::before{
+      content:"";
+      position:absolute; inset:0;
+      background: url('https://constitutionnet.org/sites/default/files/FT.jpg') center/cover no-repeat;
+      filter: grayscale(100%) contrast(110%) brightness(0.8);
+      transform: scale(1.05);
+      z-index:-2;
+    }
+    /* soft vignette + gradient wash to improve legibility */
+    .hero::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(1200px 600px at 20% 20%, rgba(0,0,0,0.55), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.45) 30%, rgba(0,0,0,0.55) 100%);
+      z-index:-1;
+      mix-blend-mode:multiply;
+    }
+    h1{
+      margin:0;
+      padding: clamp(1.2rem, 2vw, 2rem);
+      font-size: clamp(2rem, 2.5vw + 1.2rem, 3rem);
+      font-weight:800;
+      letter-spacing:0.4px;
+      text-align:center;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+    }
+    .sub{
+      margin: 0.25rem 0 2rem;
+      text-align:center;
+      color: var(--muted);
+      font-size: clamp(0.95rem, 0.6rem + 1vw, 1.05rem);
+      text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+    }
+    .wrap{
+      width:min(1000px, 94vw);
+      margin: -48px auto 40px; /* lift the card into the hero */
+      padding: 0 1rem;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: clamp(1rem, 1rem + 2vw, 2.25rem);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.45), inset 0 0 30px rgba(96,165,250,0.06);
+      backdrop-filter: blur(6px);
+    }
+    .timer{
+      display:grid; grid-template-columns: repeat(4,1fr);
+      gap: clamp(0.8rem, 1vw, 1.2rem);
+    }
+    .unit{
+      background: rgba(17,24,39,0.65);
+      border:1px solid rgba(96,165,250,0.25);
+      border-radius: 16px;
+      padding: clamp(0.9rem, 1.2rem + 1vw, 1.4rem);
+      text-align:center;
+    }
+    .value{
+      font-variant-numeric: tabular-nums lining-nums;
+      font-weight:800;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      line-height:1;
+      letter-spacing:1px;
+    }
+    .label{ margin-top:0.5rem; font-size:0.95rem; color:var(--muted); letter-spacing:0.6px; text-transform:uppercase; }
+    .target{ margin-top:1.5rem; text-align:center; color:var(--muted); font-size:0.95rem;}
+    .footer{ margin-top:1.25rem; text-align:center; font-size:0.9rem; color:var(--muted);}
+    .blink{ animation: blink 1s step-start 0s infinite; }
+    @keyframes blink { 50% { opacity:0.25; } }
+    .done{ color:#34d399; text-align:center; font-size: clamp(1.2rem, 1rem + 2vw, 1.6rem); font-weight:700; margin-top:1rem; }
+    @media (max-width:600px){
+      .timer{ grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>Countdown to Budafrés 2025</h1>
+      <p class="sub">Target: Friday 10:15 (Europe/Oslo)</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="timer" id="timer" aria-live="polite" aria-atomic="true">
+        <div class="unit"><div class="value" id="days">–</div><div class="label">Days</div></div>
+        <div class="unit"><div class="value" id="hours">–</div><div class="label">Hours</div></div>
+        <div class="unit"><div class="value" id="minutes">–</div><div class="label">Minutes</div></div>
+        <div class="unit"><div class="value" id="seconds">–</div><div class="label">Seconds</div></div>
+      </div>
+      <div id="done" class="done" style="display:none;">Time reached 🎉</div>
+      <p id="targetDisplay" class="target"></p>
+      <p class="footer">Tip: leave this tab open; the time zone math runs locally in your browser.</p>
+    </section>
+  </main>
+
+  <script>
+    // Utility: get the offset (in minutes) for a given IANA tz at a specific instant
+    function getTzOffsetMinutes(timeZone, date) {
+      const dtf = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      });
+      const parts = dtf.formatToParts(date);
+      const map = {};
+      for (const p of parts) map[p.type] = p.value;
+      const year = Number(map.year);
+      const month = Number(map.month);
+      const day = Number(map.day);
+      const hour = Number(map.hour);
+      const minute = Number(map.minute);
+      const second = Number(map.second);
+      const asUTC = Date.UTC(year, month - 1, day, hour, minute, second);
+      return (asUTC - date.getTime()) / 60000;
+    }
+
+    function getZonedParts(timeZone, date) {
+      const dtf = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        weekday:'short',
+        year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit',
+        hour12:false
+      });
+      const parts = dtf.formatToParts(date);
+      const res = {};
+      for (const p of parts) res[p.type] = p.value;
+      const asUTC = Date.UTC(+res.year, +res.month - 1, +res.day, +res.hour, +res.minute, +res.second);
+      res.utcDateForZone = new Date(asUTC);
+      return res;
+    }
+
+    function makeZonedInstant(timeZone, y, m, d, hh=0, mm=0, ss=0) {
+      const tentativeUTC = Date.UTC(y, m - 1, d, hh, mm, ss);
+      const offset = getTzOffsetMinutes(timeZone, new Date(tentativeUTC));
+      return new Date(tentativeUTC - offset * 60000);
+    }
+
+    function nextFriday1015(timeZone) {
+      const now = new Date();
+      const zp = getZonedParts(timeZone, now);
+      const dow = zp.utcDateForZone.getUTCDay(); // 0=Sun..5=Fri
+      const y = +zp.year, m = +zp.month, d = +zp.day;
+      let daysAhead = (5 - dow + 7) % 7;
+      const today1015 = makeZonedInstant(timeZone, y, m, d, 10, 15, 0);
+      const nowInstant = now.getTime();
+      const isFriday = (dow === 5);
+      if (isFriday && nowInstant >= today1015.getTime()) {
+        daysAhead = 7;
+      }
+      const baseMidnight = makeZonedInstant(timeZone, y, m, d, 0, 0, 0).getTime();
+      const targetDateInZone = new Date(baseMidnight + daysAhead * 86400000);
+      const tzParts = getZonedParts(timeZone, targetDateInZone);
+      const targetInstant = makeZonedInstant(timeZone, +tzParts.year, +tzParts.month, +tzParts.day, 10, 15, 0);
+      return targetInstant;
+    }
+
+    const timeZone = 'Europe/Oslo';
+    const target = nextFriday1015(timeZone);
+
+    function updateTargetDisplay() {
+      const fmt = new Intl.DateTimeFormat(undefined, {
+        timeZone,
+        year:'numeric', month:'long', day:'2-digit',
+        hour:'2-digit', minute:'2-digit',
+        timeZoneName:'short'
+      });
+      const localFmt = new Intl.DateTimeFormat(undefined, {
+        year:'numeric', month:'long', day:'2-digit',
+        hour:'2-digit', minute:'2-digit',
+        timeZoneName:'short'
+      });
+      const targetStrOslo = fmt.format(target);
+      const targetStrLocal = localFmt.format(target);
+      document.getElementById('targetDisplay').innerHTML =
+        `Target time: <strong>${targetStrOslo}</strong> (Europe/Oslo). Your local time: <strong>${targetStrLocal}</strong>.`;
+    }
+
+    function pad(n){ return n.toString().padStart(2,'0'); }
+
+    function tick(){
+      const now = new Date().getTime();
+      const diff = Math.max(0, target.getTime() - now);
+      const totalSeconds = Math.floor(diff/1000);
+      const days = Math.floor(totalSeconds / (3600*24));
+      const hours = Math.floor((totalSeconds % (3600*24)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      document.getElementById('days').textContent = String(days);
+      document.getElementById('hours').textContent = pad(hours);
+      document.getElementById('minutes').textContent = pad(minutes);
+      document.getElementById('seconds').textContent = pad(seconds);
+
+      const done = document.getElementById('done');
+      if(diff === 0){
+        done.style.display='block';
+        document.getElementById('seconds').classList.add('blink');
+      }else{
+        done.style.display='none';
+        document.getElementById('seconds').classList.remove('blink');
+      }
+    }
+
+    updateTargetDisplay();
+    tick();
+    setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tick(); });
+  </script>
+</body>
+</html>
