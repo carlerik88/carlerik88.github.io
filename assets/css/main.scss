@@ -1,0 +1,16 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+---
+
+@charset "utf-8";
+
+/* Teal accent color customization */
+$link-color: #14b8a6;
+$link-color-hover: #0d9488;
+$masthead-link-color: #14b8a6;
+$masthead-link-color-hover: #0d9488;
+$navicon-link-color-hover: #14b8a6;
+$primary-color: #14b8a6;
+
+@import "minimal-mistakes/skins/dark";
+@import "minimal-mistakes";

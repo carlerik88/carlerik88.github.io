@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: single
 title: "Experimenting with Claude Code"
 date: 2026-01-12
 ---
