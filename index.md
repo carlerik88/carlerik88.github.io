@@ -1,16 +1,19 @@
 ---
-layout: home
+layout: single
 author_profile: true
 title: "Welcome"
-header:
-  overlay_color: "#1a1a2e"
-  overlay_filter: "0.5"
 ---
 
-# Hey, I'm Carl-Erik
+# Welcome to Scaled Customer Success
 
-I'm a **Customer Success professional** who loves to build things. I work at the intersection of people and technology — helping customers succeed while geeking out on technical projects.
+This site is currently under construction.
 
-This is where I document what I'm learning, building, and thinking about.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
 
-## Latest Posts
+## Coming Soon
+
+- Blog posts about Customer Success strategies
+- Technical projects and experiments
+- Insights from the intersection of technology and customer experience
+
+*Check back soon for updates!*
